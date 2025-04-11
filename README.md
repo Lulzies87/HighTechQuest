@@ -42,6 +42,8 @@ npm run start
 ```
 
 ### Environment Variables:
+```
 CONN_STRING=db_connection_string
 CORS_ORIGIN=your_frontend_domain
 JWT_SECRET=your_jwt_secret
+```
