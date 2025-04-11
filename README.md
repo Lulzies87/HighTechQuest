@@ -2,6 +2,12 @@
 
 ## Setup
 
+Clone files
+
+```
+git clone https://github.com/Lulzies87/HighTechQuest.git
+```
+
 ### Frontend - /app:
 1. Install dependencies
 ```
@@ -14,30 +20,25 @@ npm i
 npm run build
 ```
 
-3. Start the app
-```
-npm run start
-```
+3. Serve the /dist/index.html in the web server
 
 ### Backend - /api:
-
-1. Clone files from /api
-
-```
-git clone https://github.com/Lulzies87/HighTechQuest.git
-```
-
-2. Install dependencies
+1. Install dependencies
 
 ```
-cd HighTechQuest/api/
+cd api
 npm i
 ```
 
-3. Start the server
+2. Build
+```
+npm run build
+```
+
+2. Start the server
 
 ```
-npm run dev
+npm run start
 ```
 
 ### Environment Variables:
