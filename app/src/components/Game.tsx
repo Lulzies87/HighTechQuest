@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import Phaser from "phaser";
-import { gameConfig } from "../game/config";
+import { gameConfig } from "../game/config/GameConfig";
 
 const Game = () => {
   const gameContainerRef = useRef<HTMLDivElement>(null);
