@@ -6,15 +6,43 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private playerSpeed: number = PLAYER_SPEED;
   private lastDirection: "up" | "down" | "left" | "right" = "down";
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
+  private health: number;
+  private maxHealth: number;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    maxHealth: number = 100
+  ) {
     super(scene, x, y, "character");
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
+    this.maxHealth = maxHealth;
+    this.health = maxHealth;
+
     this.setCollideWorldBounds(true);
     this.createAnimations();
     this.setupInput(scene);
+  }
+
+  getHealth() {
+    return this.health;
+  }
+
+  getMaxHealth() {
+    return this.maxHealth;
+  }
+
+  damage(amount: number) {
+    this.health = Math.max(0, this.health - amount);
+    return this.health;
+  }
+
+  heal(amount: number) {
+    this.health = Math.min(this.maxHealth, this.health + amount);
+    return this.health;
   }
 
   setupInput(scene: Phaser.Scene) {

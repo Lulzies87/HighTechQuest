@@ -1,16 +1,14 @@
 import Phaser from "phaser";
 import { Player } from "../objects/Player";
+import { HealthBar } from "../ui/HealthBar";
 import { COIN_SCORE, WORLD_HEIGHT, WORLD_WIDTH } from "../utils/Constants";
 
 export default class MainScene extends Phaser.Scene {
   private walls?: Phaser.Physics.Arcade.StaticGroup;
   private player?: Player;
+  private healthBar?: HealthBar;
   private coins?: Phaser.Physics.Arcade.Group;
   private scoreText?: Phaser.GameObjects.Text;
-  private lifeBarBackground?: Phaser.GameObjects.Rectangle;
-  private lifeBarFill?: Phaser.GameObjects.Rectangle;
-  private heart?: Phaser.GameObjects.Image;
-  private hp: number = 87;
   private score: number = 0;
 
   constructor() {
@@ -64,26 +62,21 @@ export default class MainScene extends Phaser.Scene {
       return true;
     });
 
-    this.player = new Player(this, 500, 300);
+    this.player = new Player(this, 500, 300, 100);
+    this.healthBar = new HealthBar(
+      this,
+      1100,
+      16,
+      this.player.getMaxHealth(),
+      160
+    );
+    this.healthBar.setHealth(this.player.getHealth());
 
     this.scoreText = this.add.text(1000, 16, `${this.score}`, {
       fontSize: "32px",
       color: "#000",
     });
     this.scoreText.setScrollFactor(0);
-
-    this.heart = this.add.image(1100, 16, "heart").setOrigin(0, 0);
-    this.heart.setScrollFactor(0);
-
-    this.lifeBarBackground = this.add
-      .rectangle(1150, 16, 100, 32, 0x888888)
-      .setOrigin(0, 0);
-    this.lifeBarFill = this.add
-      .rectangle(1150, 16, this.hp, 32, 0xff0000)
-      .setOrigin(0, 0);
-
-    this.lifeBarBackground.setScrollFactor(0);
-    this.lifeBarFill.setScrollFactor(0);
 
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.overlap(
@@ -124,6 +117,21 @@ export default class MainScene extends Phaser.Scene {
         this.walls!.create(pos.x + i * 32, pos.y, "wall");
       }
     });
+  }
+
+  damagePlayer(amount: number) {
+    if (!this.player || !this.healthBar) return;
+    const newHealth = this.player.damage(amount);
+    this.healthBar.decrease(amount);
+
+    if (newHealth <= 0) {
+      // TODO: this.gameOver();
+    }
+  }
+
+  healPlayer(amount: number) {
+    this.player?.heal(amount);
+    this.healthBar?.increase(amount);
   }
 
   update() {
