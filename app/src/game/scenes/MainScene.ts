@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { Player } from "../objects/Player";
-import { COIN_SCORE } from "../utils/Constants";
+import { COIN_SCORE, WORLD_HEIGHT, WORLD_WIDTH } from "../utils/Constants";
 
 export default class MainScene extends Phaser.Scene {
   private walls?: Phaser.Physics.Arcade.StaticGroup;
@@ -30,24 +30,24 @@ export default class MainScene extends Phaser.Scene {
 
   create() {
     // TODO: this.createWorld();
-    this.physics.world.setBounds(0, 0, 3840, 2160);
+    this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
-    for (let x = 0; x < 3840; x += 32) {
-      for (let y = 0; y < 2160; y += 32) {
+    for (let x = 0; x < WORLD_WIDTH; x += 32) {
+      for (let y = 0; y < WORLD_HEIGHT; y += 32) {
         this.add.image(x, y, "floor").setOrigin(0, 0);
       }
     }
 
     this.walls = this.physics.add.staticGroup();
 
-    for (let x = 0; x <= 3840; x += 32) {
+    for (let x = 0; x <= WORLD_WIDTH; x += 32) {
       this.walls.create(x, 0, "wall");
-      this.walls.create(x, 2160, "wall");
+      this.walls.create(x, WORLD_HEIGHT, "wall");
     }
 
-    for (let y = 0; y <= 2160; y += 32) {
+    for (let y = 0; y <= WORLD_HEIGHT; y += 32) {
       this.walls.create(0, y, "wall");
-      this.walls.create(3840, y, "wall");
+      this.walls.create(WORLD_WIDTH, y, "wall");
     }
 
     this.createObstacles();
@@ -94,7 +94,7 @@ export default class MainScene extends Phaser.Scene {
       this
     );
 
-    this.cameras.main.setBounds(0, 0, 3840, 2160);
+    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     this.cameras.main.setDeadzone(100, 100);
   }
