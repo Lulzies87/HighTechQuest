@@ -1,12 +1,17 @@
 import Phaser from "phaser";
+import { Player } from "../objects/Player";
+import { COIN_SCORE } from "../utils/Constants";
 
 export default class MainScene extends Phaser.Scene {
   private walls?: Phaser.Physics.Arcade.StaticGroup;
-  private player?: Phaser.Physics.Arcade.Sprite;
-  private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
-  private keys: any = {};
-  private playerSpeed: number = 160;
-  private lastDirection: "up" | "down" | "left" | "right" = "down";
+  private player?: Player;
+  private coins?: Phaser.Physics.Arcade.Group;
+  private scoreText?: Phaser.GameObjects.Text;
+  private lifeBarBackground?: Phaser.GameObjects.Rectangle;
+  private lifeBarFill?: Phaser.GameObjects.Rectangle;
+  private heart?: Phaser.GameObjects.Image;
+  private hp: number = 87;
+  private score: number = 0;
 
   constructor() {
     super({ key: "MainScene" });
@@ -15,6 +20,8 @@ export default class MainScene extends Phaser.Scene {
   preload() {
     this.load.image("floor", "/assets/floor.png");
     this.load.image("wall", "/assets/wall.png");
+    this.load.image("coin", "/assets/coin.png");
+    this.load.image("heart", "/assets/heart.png");
     this.load.spritesheet("character", "/assets/character.png", {
       frameWidth: 32,
       frameHeight: 32,
@@ -22,44 +29,80 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
+    // TODO: this.createWorld();
     this.physics.world.setBounds(0, 0, 3840, 2160);
 
-    for (let x = 0; x < 3840; x += 128) {
-      for (let y = 0; y < 2160; y += 128) {
+    for (let x = 0; x < 3840; x += 32) {
+      for (let y = 0; y < 2160; y += 32) {
         this.add.image(x, y, "floor").setOrigin(0, 0);
       }
     }
 
     this.walls = this.physics.add.staticGroup();
 
-    for (let x = 0; x <= 3840; x += 64) {
+    for (let x = 0; x <= 3840; x += 32) {
       this.walls.create(x, 0, "wall");
       this.walls.create(x, 2160, "wall");
     }
 
-    for (let y = 0; y <= 2160; y += 64) {
+    for (let y = 0; y <= 2160; y += 32) {
       this.walls.create(0, y, "wall");
       this.walls.create(3840, y, "wall");
     }
 
     this.createObstacles();
 
-    this.player = this.physics.add.sprite(500, 300, "character");
-    this.player.setCollideWorldBounds(true);
+    this.coins = this.physics.add.group({
+      key: "coin",
+      repeat: 5,
+      setXY: { x: 11 * 32, y: 11 * 32, stepX: 128 },
+    });
 
-    this.createPlayerAnimations();
+    this.coins.children.iterate((child) => {
+      const sprite = child as Phaser.Physics.Arcade.Image;
+      sprite.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+      return true;
+    });
+
+    this.player = new Player(this, 500, 300);
+
+    this.scoreText = this.add.text(1000, 16, `${this.score}`, {
+      fontSize: "32px",
+      color: "#000",
+    });
+    this.scoreText.setScrollFactor(0);
+
+    this.heart = this.add.image(1100, 16, "heart").setOrigin(0, 0);
+    this.heart.setScrollFactor(0);
+
+    this.lifeBarBackground = this.add
+      .rectangle(1150, 16, 100, 32, 0x888888)
+      .setOrigin(0, 0);
+    this.lifeBarFill = this.add
+      .rectangle(1150, 16, this.hp, 32, 0xff0000)
+      .setOrigin(0, 0);
+
+    this.lifeBarBackground.setScrollFactor(0);
+    this.lifeBarFill.setScrollFactor(0);
 
     this.physics.add.collider(this.player, this.walls);
+    this.physics.add.overlap(
+      this.player,
+      this.coins,
+      this.collectCoin,
+      undefined,
+      this
+    );
 
     this.cameras.main.setBounds(0, 0, 3840, 2160);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     this.cameras.main.setDeadzone(100, 100);
+  }
 
-    this.cursors = this.input.keyboard!.createCursorKeys();
-    this.keys.W = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-    this.keys.A = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-    this.keys.S = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.S);
-    this.keys.D = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+  collectCoin(player: any, coin: any) {
+    coin.disableBody(true, true);
+    this.score += COIN_SCORE;
+    this.scoreText?.setText(`${this.score}`);
   }
 
   createObstacles() {
@@ -76,114 +119,14 @@ export default class MainScene extends Phaser.Scene {
     ];
 
     obstaclePositions.forEach((pos) => {
-      for (let i = 0; i < 2; i++) {
-        for (let j = 0; j < 2; j++) {
-          this.walls!.create(pos.x + i * 64, pos.y + j * 64, "wall");
-        }
+      const wallLength = Math.floor(Math.random() * 5) + 3;
+      for (let i = 0; i < wallLength; i++) {
+        this.walls!.create(pos.x + i * 32, pos.y, "wall");
       }
     });
   }
 
-  createPlayerAnimations() {
-    this.anims.create({
-      key: "walk_down",
-      frames: this.anims.generateFrameNumbers("character", {
-        start: 0,
-        end: 3,
-      }),
-      frameRate: 10,
-      repeat: -1, // loop animation
-    });
-
-    this.anims.create({
-      key: "walk_horizontal",
-      frames: this.anims.generateFrameNumbers("character", {
-        start: 4,
-        end: 7,
-      }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: "walk_up",
-      frames: this.anims.generateFrameNumbers("character", {
-        start: 12,
-        end: 15,
-      }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: "idle-down",
-      frames: [{ key: "character", frame: 0 }],
-      frameRate: 10,
-    });
-    this.anims.create({
-      key: "idle-left",
-      frames: [{ key: "character", frame: 4 }],
-      frameRate: 10,
-    });
-    this.anims.create({
-      key: "idle-right",
-      frames: [{ key: "character", frame: 4 }],
-      frameRate: 10,
-    });
-    this.anims.create({
-      key: "idle-up",
-      frames: [{ key: "character", frame: 12 }],
-      frameRate: 10,
-    });
-  }
-
   update() {
-    if (!this.player) return;
-
-    this.player.setVelocity(0);
-
-    const leftPressed = this.cursors?.left.isDown || this.keys.A.isDown;
-    const rightPressed = this.cursors?.right.isDown || this.keys.D.isDown;
-    const upPressed = this.cursors?.up.isDown || this.keys.W.isDown;
-    const downPressed = this.cursors?.down.isDown || this.keys.S.isDown;
-
-    const movingDiagonally =
-      (leftPressed || rightPressed) && (upPressed || downPressed);
-    const speed = movingDiagonally
-      ? this.playerSpeed * 0.7071
-      : this.playerSpeed;
-
-    if (leftPressed) {
-      this.player.setVelocityX(-speed);
-    } else if (rightPressed) {
-      this.player.setVelocityX(speed);
-    }
-
-    if (upPressed) {
-      this.player.setVelocityY(-speed);
-    } else if (downPressed) {
-      this.player.setVelocityY(speed);
-    }
-
-    if (leftPressed && !rightPressed) {
-      this.player.anims.play("walk_horizontal", true);
-      this.player.flipX = false;
-      this.lastDirection = "left";
-    } else if (rightPressed && !leftPressed) {
-      this.player.anims.play("walk_horizontal", true);
-      this.player.flipX = true;
-      this.lastDirection = "right";
-    } else if (upPressed && !downPressed) {
-      this.player.anims.play("walk_up", true);
-      this.player.flipX = true;
-      this.lastDirection = "up";
-    } else if (downPressed && !upPressed) {
-      this.player.anims.play("walk_down", true);
-      this.player.flipX = true;
-      this.lastDirection = "down";
-    } else {
-      this.player.anims.play(`idle-${this.lastDirection}`, true);
-      this.player.flipX = this.lastDirection === "right";
-    }
+    this.player?.update();
   }
 }
