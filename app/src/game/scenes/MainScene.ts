@@ -92,24 +92,14 @@ export default class MainScene extends Phaser.Scene {
         end: 3,
       }),
       frameRate: 10,
-      repeat: -1,
+      repeat: -1, // loop animation
     });
 
     this.anims.create({
-      key: "walk_left",
+      key: "walk_horizontal",
       frames: this.anims.generateFrameNumbers("character", {
         start: 4,
         end: 7,
-      }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: "walk_right",
-      frames: this.anims.generateFrameNumbers("character", {
-        start: 8,
-        end: 11,
       }),
       frameRate: 10,
       repeat: -1,
@@ -137,7 +127,7 @@ export default class MainScene extends Phaser.Scene {
     });
     this.anims.create({
       key: "idle-right",
-      frames: [{ key: "character", frame: 8 }],
+      frames: [{ key: "character", frame: 4 }],
       frameRate: 10,
     });
     this.anims.create({
@@ -176,19 +166,24 @@ export default class MainScene extends Phaser.Scene {
     }
 
     if (leftPressed && !rightPressed) {
-      this.player.anims.play("walk_left", true);
+      this.player.anims.play("walk_horizontal", true);
+      this.player.flipX = false;
       this.lastDirection = "left";
     } else if (rightPressed && !leftPressed) {
-      this.player.anims.play("walk_right", true);
+      this.player.anims.play("walk_horizontal", true);
+      this.player.flipX = true;
       this.lastDirection = "right";
     } else if (upPressed && !downPressed) {
       this.player.anims.play("walk_up", true);
+      this.player.flipX = true;
       this.lastDirection = "up";
     } else if (downPressed && !upPressed) {
       this.player.anims.play("walk_down", true);
+      this.player.flipX = true;
       this.lastDirection = "down";
     } else {
       this.player.anims.play(`idle-${this.lastDirection}`, true);
+      this.player.flipX = this.lastDirection === "right";
     }
   }
 }
