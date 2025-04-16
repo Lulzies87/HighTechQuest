@@ -1,8 +1,8 @@
 import Phaser from "phaser";
 import { Player } from "../objects/Player";
 import { HealthBar } from "../ui/HealthBar";
+import { CoinManager } from "../../managers/CoinManager";
 import {
-  COIN_SCORE,
   TILE_HEIGHT,
   TILE_WIDTH,
   WORLD_HEIGHT,
@@ -13,7 +13,7 @@ export default class MainScene extends Phaser.Scene {
   private walls?: Phaser.Physics.Arcade.StaticGroup;
   private player?: Player;
   private healthBar?: HealthBar;
-  private coins?: Phaser.Physics.Arcade.StaticGroup;
+  private coinManager?: CoinManager;
   private scoreText?: Phaser.GameObjects.Text;
   private score: number = 0;
 
@@ -24,9 +24,12 @@ export default class MainScene extends Phaser.Scene {
   preload() {
     this.load.image("floor", "/assets/floor.png");
     this.load.image("wall", "/assets/wall.png");
-    this.load.image("coin", "/assets/coin.png");
     this.load.image("heart", "/assets/heart.png");
     this.load.spritesheet("character", "/assets/character.png", {
+      frameWidth: TILE_WIDTH,
+      frameHeight: TILE_HEIGHT,
+    });
+    this.load.spritesheet("coin", "/assets/coin.png", {
       frameWidth: TILE_WIDTH,
       frameHeight: TILE_HEIGHT,
     });
@@ -56,12 +59,8 @@ export default class MainScene extends Phaser.Scene {
 
     this.createObstacles();
 
-    this.coins = this.physics.add
-      .staticGroup({
-        key: "coin",
-        repeat: 5,
-        setXY: { x: 4 * TILE_WIDTH, y: 4 * TILE_HEIGHT, stepX: TILE_WIDTH * 4 },
-      });
+    this.coinManager = new CoinManager(this);
+    this.coinManager.createDefaultCoins();
 
     this.player = new Player(this, 21 * TILE_WIDTH, 12 * TILE_HEIGHT, 100);
     this.healthBar = new HealthBar(
@@ -82,7 +81,7 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.overlap(
       this.player,
-      this.coins,
+      this.coinManager.getCoins(),
       this.collectCoin,
       undefined,
       this
@@ -94,8 +93,10 @@ export default class MainScene extends Phaser.Scene {
   }
 
   collectCoin(player: any, coin: any) {
-    coin.disableBody(true, true);
-    this.score += COIN_SCORE;
+    if (!this.coinManager) return;
+
+    const value = this.coinManager.handlePlayerCollision(player, coin);
+    this.score += value;
     this.scoreText?.setText(`${this.score}`);
   }
 
