@@ -36,7 +36,44 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
-    // TODO: this.createWorld();
+    this.createWorld();
+
+    this.coinManager = new CoinManager(this);
+    this.coinManager.createDefaultCoins();
+
+    this.player = new Player(this, 21 * TILE_WIDTH, 12 * TILE_HEIGHT, 100);
+
+    this.healthBar = new HealthBar(
+      this,
+      1100,
+      16,
+      this.player.getMaxHealth(),
+      160
+    );
+    this.healthBar.setHealth(this.player.getHealth());
+
+    this.scoreText = this.add.text(1000, 16, `${this.score}`, {
+      fontSize: "32px",
+      color: "#000",
+    });
+    this.scoreText.setScrollFactor(0);
+
+    if (!this.walls) return;
+    this.physics.add.collider(this.player, this.walls);
+    this.physics.add.overlap(
+      this.player,
+      this.coinManager.getCoins(),
+      this.collectCoin,
+      undefined,
+      this
+    );
+
+    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+    this.cameras.main.setDeadzone(100, 100);
+  }
+
+  createWorld() {
     this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
     for (let x = 0; x < WORLD_WIDTH; x += TILE_WIDTH) {
@@ -58,38 +95,6 @@ export default class MainScene extends Phaser.Scene {
     }
 
     this.createObstacles();
-
-    this.coinManager = new CoinManager(this);
-    this.coinManager.createDefaultCoins();
-
-    this.player = new Player(this, 21 * TILE_WIDTH, 12 * TILE_HEIGHT, 100);
-    this.healthBar = new HealthBar(
-      this,
-      1100,
-      16,
-      this.player.getMaxHealth(),
-      160
-    );
-    this.healthBar.setHealth(this.player.getHealth());
-
-    this.scoreText = this.add.text(1000, 16, `${this.score}`, {
-      fontSize: "32px",
-      color: "#000",
-    });
-    this.scoreText.setScrollFactor(0);
-
-    this.physics.add.collider(this.player, this.walls);
-    this.physics.add.overlap(
-      this.player,
-      this.coinManager.getCoins(),
-      this.collectCoin,
-      undefined,
-      this
-    );
-
-    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-    this.cameras.main.setDeadzone(100, 100);
   }
 
   collectCoin(player: any, coin: any) {
