@@ -43,7 +43,7 @@ export class HealthBar {
       .setScrollFactor(0);
   }
 
-  setHealth(hp: number) {
+  setHealth(hp: number): HealthBar {
     this.currentHp = Phaser.Math.Clamp(hp, 0, this.maxHp);
 
     const fillWidth = (this.currentHp / this.maxHp) * this.width;
@@ -58,7 +58,7 @@ export class HealthBar {
     return this;
   }
 
-  decrease(amount: number) {
+  decrease(amount: number): HealthBar {
     this.setHealth(this.currentHp - amount);
 
     this.scene.tweens.add({
@@ -71,7 +71,7 @@ export class HealthBar {
     return this;
   }
 
-  increase(amount: number) {
+  increase(amount: number): HealthBar {
     this.setHealth(this.currentHp + amount);
 
     this.scene.tweens.add({
@@ -84,19 +84,15 @@ export class HealthBar {
     return this;
   }
 
-  getCurrentHealth() {
+  getCurrentHealth(): number {
     return this.currentHp;
   }
 
-  getMaxHealth() {
+  getMaxHealth(): number {
     return this.maxHp;
   }
 
-  getHealthPercentage() {
-    return this.currentHp / this.maxHp;
-  }
-
-  setPosition(x: number, y: number) {
+  setPosition(x: number, y: number): HealthBar {
     const xDiff = x - this.x;
     const yDiff = y - this.y;
 
@@ -113,7 +109,7 @@ export class HealthBar {
     return this;
   }
 
-  setVisible(visible: boolean) {
+  setVisible(visible: boolean): HealthBar {
     this.background.setVisible(visible);
     this.fill.setVisible(visible);
     this.icon.setVisible(visible);
@@ -121,7 +117,7 @@ export class HealthBar {
     return this;
   }
 
-  destroy() {
+  destroy(): void {
     this.background.destroy();
     this.fill.destroy();
     this.icon.destroy();
