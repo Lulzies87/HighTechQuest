@@ -7,7 +7,8 @@ exports.connectToDB = connectToDB;
 const mongoose_1 = __importDefault(require("mongoose"));
 async function connectToDB() {
     if (!process.env.CONN_STRING) {
-        throw new Error("Must provide a connection string");
+        console.warn("No connection string provided. Skipping database connection.");
+        return;
     }
     await mongoose_1.default.connect(process.env.CONN_STRING);
 }
