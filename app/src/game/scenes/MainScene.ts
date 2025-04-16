@@ -92,7 +92,7 @@ export default class MainScene extends Phaser.Scene {
     this.cameras.main.setDeadzone(100, 100);
   }
 
-  collectCoin(player: any, coin: any) {
+  collectCoin(_player: any, coin: any) {
     coin.disableBody(true, true);
     this.score += COIN_SCORE;
     this.scoreText?.setText(`${this.score}`);
