@@ -1,13 +1,19 @@
 import Phaser from "phaser";
 import { Player } from "../objects/Player";
 import { HealthBar } from "../ui/HealthBar";
-import { COIN_SCORE, WORLD_HEIGHT, WORLD_WIDTH } from "../utils/Constants";
+import {
+  COIN_SCORE,
+  TILE_HEIGHT,
+  TILE_WIDTH,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
+} from "../utils/Constants";
 
 export default class MainScene extends Phaser.Scene {
   private walls?: Phaser.Physics.Arcade.StaticGroup;
   private player?: Player;
   private healthBar?: HealthBar;
-  private coins?: Phaser.Physics.Arcade.Group;
+  private coins?: Phaser.Physics.Arcade.StaticGroup;
   private scoreText?: Phaser.GameObjects.Text;
   private score: number = 0;
 
@@ -21,8 +27,8 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("coin", "/assets/coin.png");
     this.load.image("heart", "/assets/heart.png");
     this.load.spritesheet("character", "/assets/character.png", {
-      frameWidth: 32,
-      frameHeight: 32,
+      frameWidth: TILE_WIDTH,
+      frameHeight: TILE_HEIGHT,
     });
   }
 
@@ -30,39 +36,34 @@ export default class MainScene extends Phaser.Scene {
     // TODO: this.createWorld();
     this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
-    for (let x = 0; x < WORLD_WIDTH; x += 32) {
-      for (let y = 0; y < WORLD_HEIGHT; y += 32) {
-        this.add.image(x, y, "floor").setOrigin(0, 0);
+    for (let x = 0; x < WORLD_WIDTH; x += TILE_WIDTH) {
+      for (let y = 0; y < WORLD_HEIGHT; y += TILE_HEIGHT) {
+        this.add.image(x, y, "floor");
       }
     }
 
     this.walls = this.physics.add.staticGroup();
 
-    for (let x = 0; x <= WORLD_WIDTH; x += 32) {
+    for (let x = 0; x < WORLD_WIDTH; x += TILE_WIDTH) {
       this.walls.create(x, 0, "wall");
       this.walls.create(x, WORLD_HEIGHT, "wall");
     }
 
-    for (let y = 0; y <= WORLD_HEIGHT; y += 32) {
+    for (let y = 0; y < WORLD_HEIGHT; y += TILE_HEIGHT) {
       this.walls.create(0, y, "wall");
       this.walls.create(WORLD_WIDTH, y, "wall");
     }
 
     this.createObstacles();
 
-    this.coins = this.physics.add.group({
-      key: "coin",
-      repeat: 5,
-      setXY: { x: 11 * 32, y: 11 * 32, stepX: 128 },
-    });
+    this.coins = this.physics.add
+      .staticGroup({
+        key: "coin",
+        repeat: 5,
+        setXY: { x: 4 * TILE_WIDTH, y: 4 * TILE_HEIGHT, stepX: TILE_WIDTH * 4 },
+      });
 
-    this.coins.children.iterate((child) => {
-      const sprite = child as Phaser.Physics.Arcade.Image;
-      sprite.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-      return true;
-    });
-
-    this.player = new Player(this, 500, 300, 100);
+    this.player = new Player(this, 21 * TILE_WIDTH, 12 * TILE_HEIGHT, 100);
     this.healthBar = new HealthBar(
       this,
       1100,
@@ -100,21 +101,26 @@ export default class MainScene extends Phaser.Scene {
 
   createObstacles() {
     const obstaclePositions = [
-      { x: 300, y: 300 },
-      { x: 600, y: 600 },
-      { x: 800, y: 200 },
-      { x: 1200, y: 400 },
-      { x: 1500, y: 800 },
-      { x: 1800, y: 300 },
-      { x: 2200, y: 600 },
-      { x: 2500, y: 400 },
-      { x: 2800, y: 700 },
+      { x: 10 * TILE_WIDTH, y: 10 * TILE_HEIGHT },
+      { x: 17 * TILE_WIDTH, y: 20 * TILE_HEIGHT },
+      { x: 25 * TILE_WIDTH, y: 15 * TILE_HEIGHT },
+      { x: 28 * TILE_WIDTH, y: 4 * TILE_HEIGHT },
+      { x: 34 * TILE_WIDTH, y: 16 * TILE_HEIGHT },
+      { x: 10 * TILE_WIDTH, y: 30 * TILE_HEIGHT },
+      { x: 42 * TILE_WIDTH, y: 12 * TILE_HEIGHT },
+      { x: 43 * TILE_WIDTH, y: 35 * TILE_HEIGHT },
     ];
 
     obstaclePositions.forEach((pos) => {
-      const wallLength = Math.floor(Math.random() * 5) + 3;
+      const wallLength = Math.floor(Math.random() * 5) + 1;
       for (let i = 0; i < wallLength; i++) {
-        this.walls!.create(pos.x + i * 32, pos.y, "wall");
+        for (let j = 0; j < wallLength; j++) {
+          this.walls!.create(
+            pos.x + i * TILE_WIDTH,
+            pos.y + j * TILE_HEIGHT,
+            "wall"
+          );
+        }
       }
     });
   }
