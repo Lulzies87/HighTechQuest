@@ -8,14 +8,14 @@ import {
   WORLD_HEIGHT,
   WORLD_WIDTH,
 } from "../utils/Constants";
+import { ScoreDisplay } from "../ui/ScoreDisplay";
 
 export default class MainScene extends Phaser.Scene {
   private walls?: Phaser.Physics.Arcade.StaticGroup;
   private player?: Player;
   private healthBar?: HealthBar;
   private coinManager?: CoinManager;
-  private scoreText?: Phaser.GameObjects.Text;
-  private score: number = 0;
+  private scoreDisplay?: ScoreDisplay;
 
   constructor() {
     super({ key: "MainScene" });
@@ -52,11 +52,7 @@ export default class MainScene extends Phaser.Scene {
     );
     this.healthBar.setHealth(this.player.getHealth());
 
-    this.scoreText = this.add.text(1000, 16, `${this.score}`, {
-      fontSize: "32px",
-      color: "#000",
-    });
-    this.scoreText.setScrollFactor(0);
+    this.scoreDisplay = new ScoreDisplay(this, 1000, 32);
 
     if (!this.walls) return;
     this.physics.add.collider(this.player, this.walls);
@@ -98,11 +94,10 @@ export default class MainScene extends Phaser.Scene {
   }
 
   collectCoin(player: any, coin: any) {
-    if (!this.coinManager) return;
+    if (!this.coinManager || !this.scoreDisplay) return;
 
     const value = this.coinManager.handlePlayerCollision(player, coin);
-    this.score += value;
-    this.scoreText?.setText(`${this.score}`);
+    this.scoreDisplay?.addScore(value);
   }
 
   createObstacles() {
