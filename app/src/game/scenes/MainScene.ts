@@ -52,7 +52,7 @@ export default class MainScene extends Phaser.Scene {
     );
     this.healthBar.setHealth(this.player.getHealth());
 
-    this.scoreDisplay = new ScoreDisplay(this, 1000, 32);
+    this.scoreDisplay = new ScoreDisplay(this, 992, 16);
 
     if (!this.walls) return;
     this.physics.add.collider(this.player, this.walls);
