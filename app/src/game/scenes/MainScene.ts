@@ -25,9 +25,9 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("floor", "/assets/floor.png");
     this.load.image("wall", "/assets/wall.png");
     this.load.image("heart", "/assets/heart.png");
-    this.load.spritesheet("character", "/assets/character.png", {
-      frameWidth: TILE_WIDTH,
-      frameHeight: TILE_HEIGHT,
+    this.load.spritesheet("character", "/assets/ben-resized.png", {
+      frameWidth: 42,
+      frameHeight: 64,
     });
     this.load.spritesheet("coin", "/assets/coin.png", {
       frameWidth: TILE_WIDTH,
@@ -36,6 +36,9 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
+    const careerPath = this.registry.get("careerPath");
+    console.log(careerPath);
+
     this.createWorld();
 
     this.coinManager = new CoinManager(this);
